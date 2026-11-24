@@ -1,4 +1,4 @@
-/* Shared behavior for every projects/*.html page:
+/* Shared behavior for every project page (src/pages/projects/*.astro), loaded by ProjectLayout:
    - photos are shown full size, top to bottom (see .photos in styles.css)
    - each video plays once when it scrolls into view, then shows its first frame (poster)
    - ✕, "Back to projects" and Esc return to the desktop, where you left it */

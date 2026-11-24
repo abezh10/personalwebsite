@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Builds the web copies in /media from the raw originals in /images.
+# Builds the web copies in public/media from the raw originals in images/.
 #
-#   images/  raw phone photos and videos (NOT deployed: they carry GPS data and are huge)
-#   media/   small, metadata-free copies the site actually loads
+#   images/        raw phone photos and videos (NOT in git, NOT deployed: they carry GPS data and are huge)
+#   public/media/  small, metadata-free copies the site loads (committed; Vercel serves them at /media/...)
 #
 # To add or swap media: edit the MEDIA list below, then run
 #   ./scripts/optimize-media.sh          (everything)
 #   ./scripts/optimize-media.sh car      (only slugs starting with "car")
-# Tiles in index.html point at /media/<slug>.*; project pages (projects/*.html) list their gallery files.
+# Tiles in src/pages/index.astro point at /media/<slug>.*; project pages (src/pages/projects/*.astro) list their gallery files.
 #
 # Needs: sips (built into macOS), cwebp, ffmpeg  ->  brew install webp ffmpeg
 set -euo pipefail
@@ -52,7 +52,7 @@ gallery car/rear                     carrestore/IMG_7504.JPG
 
 PHOTO_MAX=1600   # longest edge of a photo, in pixels
 VIDEO_MAX=960    # widest a video gets, in pixels
-OUT=media
+OUT=public/media
 ONLY=${1:-}      # optional slug prefix
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT

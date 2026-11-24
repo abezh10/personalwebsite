@@ -1,0 +1,249 @@
+---
+// Home page: the pixel desktop. Shared head tags, fonts and styles come from SiteHead;
+// all the behavior lives in src/scripts/home.js.
+import SiteHead from '../components/SiteHead.astro';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <SiteHead />
+  <title>Abraham Zhong</title>
+  <meta name="description" content="Abraham Zhong — Stanford EE and CS student building robots, ML systems, and hardware. Personal projects and contact.">
+  <link rel="canonical" href="https://abrahamzhong.com/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Abraham Zhong">
+  <meta property="og:description" content="Stanford EE and CS student building robots, ML systems, and hardware.">
+  <meta property="og:url" content="https://abrahamzhong.com/">
+
+</head>
+<body>
+  {/* Pixel-art sky + hills, drawn by script into a tiny canvas and scaled up */}
+  <div class="scene" aria-hidden="true">
+    <canvas id="scene-canvas"></canvas>
+    <div id="sky-layer"></div>
+  </div>
+
+  {/* ===== World 1: the desktop ===== */}
+  <div class="world">
+    <main class="desktop">
+      {/* Hero */}
+      <section id="top" class="hero">
+        <div class="hero-text">
+          <h1 class="reveal">Abraham Zhong</h1>
+          <div class="panel hero-body reveal" style="--i:1">
+            <p>
+              Electrical Engineering and Computer Science at <strong>Stanford</strong>.
+              I build <span class="accent">robots that see and work in the real world</span>.
+            </p>
+          </div>
+          <div class="hero-actions reveal" style="--i:3">
+            <a href="#projects" class="px-btn green">See my projects</a>
+            <a href="#contact" class="px-btn">Get in touch</a>
+          </div>
+        </div>
+
+        {/* Photo viewer: slideshow of every project tile that has media (see the tiles below) */}
+        <div class="window hero-window viewer reveal" style="--i:2" data-name="Photo Viewer">
+          <div class="title-bar">
+            <span class="title" id="viewer-title">Photo Viewer</span>
+          </div>
+          <div class="window-body flush viewer-body">
+            <div class="viewer-stage" id="viewer-stage" tabindex="0" aria-label="Project photos and videos. Use arrow keys to browse.">
+              <img id="viewer-img" alt="" hidden>
+              <video id="viewer-vid" muted playsinline preload="none" hidden></video>
+              <div class="viewer-empty placeholder" id="viewer-empty" hidden></div>
+            </div>
+            <div class="viewer-bar">
+              <button type="button" class="vbtn" id="viewer-prev" aria-label="Previous photo"><svg viewBox="0 0 8 8" fill="currentColor"><path d="M1 0h1v8H1zM6 0h1v8H6zM5 1h1v6H5zM4 2h1v4H4zM3 3h1v2H3z"/></svg></button>
+              <button type="button" class="vbtn" id="viewer-play" aria-label="Pause slideshow"></button>
+              <button type="button" class="vbtn" id="viewer-next" aria-label="Next photo"><svg viewBox="0 0 8 8" fill="currentColor"><path d="M1 0h1v8H1zM2 1h1v6H2zM3 2h1v4H3zM4 3h1v2H4zM6 0h1v8H6z"/></svg></button>
+              <span class="viewer-caption" id="viewer-caption"></span>
+              <span class="viewer-count" id="viewer-count"></span>
+            </div>
+          </div>
+        </div>
+
+        {/* Headline ticker: the hero fills the first screen so this starts just above the taskbar, then scrolls with the page */}
+        <div class="panel ticker reveal" aria-live="polite">
+          <strong>Latest</strong>
+          <span class="ticker-text" id="headline">Now building: a robot arm to play catch</span>
+        </div>
+      </section>
+
+      {/* Personal Projects */}
+      <section id="projects">
+        <h2 class="section-label reveal">Personal Projects</h2>
+        <div class="tiles">
+          <article class="window tile reveal" style="--i:0">
+            <div class="title-bar"><span class="title">TARS.exe</span></div>
+            <div class="window-body">
+              {/* Tile media lives in /media, built from the originals in /images by scripts/optimize-media.sh.
+                   Photo: data-src="/media/<slug>.webp". Video: data-src="/media/<slug>.mp4" plus data-poster="/media/<slug>.webp".
+                   A tile whose file is missing keeps this checkered placeholder and is left out of the Photo Viewer. */}
+              <div class="tile-media placeholder" data-src="/media/tars.webp" data-alt="TARS" aria-hidden="true">Photo</div>
+              <h3>TARS</h3>
+              <p>A 6-foot walking replica of TARS from <em>Interstellar</em>, built using custom cycloidal gearboxes and powered by EV batteries.</p>
+              <a href="/projects/tars" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+
+          <article class="window tile reveal" style="--i:1">
+            <div class="title-bar"><span class="title">RobotArmCatcher.exe</span></div>
+            <div class="window-body">
+              <div class="tile-media placeholder" data-src="/media/robot-arm-catcher.webp" data-alt="Robot Arm Catcher" aria-hidden="true">Photo</div>
+              <h3>Robot Arm Catcher</h3>
+              <p>In progress: a robot arm that identifies a ball thrown at it and catches it in an optimized cradle.</p>
+              <a href="/projects/robot-arm-catcher" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+
+          <article class="window tile reveal" style="--i:2">
+            <div class="title-bar"><span class="title">AirHockey.exe</span></div>
+            <div class="window-body">
+              <div class="tile-media placeholder" data-src="/media/robotic-air-hockey-table.mp4" data-poster="/media/robotic-air-hockey-table.webp" data-alt="Robotic Air Hockey Table tracking the puck" aria-hidden="true">Video</div>
+              <h3>Robotic Air Hockey Table</h3>
+              <p>A segmentation pipeline that analyzes air hockey footage to track the puck and its path and used for imitation learning on a robot air hockey table.</p>
+              <a href="/projects/air-hockey" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+
+          <article class="window tile reveal" style="--i:0">
+            <div class="title-bar"><span class="title">Vid2CAD.exe</span></div>
+            <div class="window-body">
+              <div class="tile-media placeholder" data-src="/media/vid2cad.mp4" data-poster="/media/vid2cad.webp" data-alt="Vid2CAD orbiting a reconstructed part" aria-hidden="true">Video</div>
+              <h3>Vid2CAD</h3>
+              <p>A model from my computer vision class that turns a short orbit video of a part into an editable parametric CadQuery CAD program.</p>
+              <a href="/projects/vid2cad" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+
+          <article class="window tile reveal" style="--i:1">
+            <div class="title-bar"><span class="title">Voron.exe</span></div>
+            <div class="window-body">
+              <div class="tile-media placeholder" data-src="/media/voron-02-3d-printer.mp4" data-poster="/media/voron-02-3d-printer.webp" data-alt="Voron 0.2 3D Printer printing a part" aria-hidden="true">Video</div>
+              <h3>Voron 0.2 3D Printer</h3>
+              <p>A compact CoreXY 3D printer I tuned to print faster and quieter by tinkering with its controls and firmware.</p>
+              <a href="/projects/voron" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+
+          <article class="window tile reveal" style="--i:2">
+            <div class="title-bar"><span class="title">ExcavatorUMI.exe</span></div>
+            <div class="window-body">
+              <div class="tile-media placeholder" data-src="/media/excavator-umi.webp" data-alt="Excavator UMI" aria-hidden="true">Photo</div>
+              <h3>Excavator UMI</h3>
+              <p>Augmenting data to apply the UMI pipeline to excavators and robot arms.</p>
+              <a href="/projects/excavator-umi" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+
+          <article class="window tile reveal" style="--i:0">
+            <div class="title-bar"><span class="title">CarRestoration.exe</span></div>
+            <div class="window-body">
+              <div class="tile-media placeholder" data-src="/media/car-restoration.webp" data-alt="Car Restoration" aria-hidden="true">Photo</div>
+              <h3>Car Restoration</h3>
+              <p>Restored and upgraded a BMW 3 Series sedan: new brakes, headlights, bumper, and more.</p>
+              <a href="/projects/car-restoration" class="px-btn small">Learn more</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      {/* About Me */}
+      <section id="about">
+        <h2 class="section-label reveal">About Me</h2>
+        <div class="window reveal">
+          <div class="title-bar"><span class="title">About Me.txt</span></div>
+          <div class="window-body about">
+            {/* Add a "photo headshot <file>" line to scripts/optimize-media.sh and run it */}
+            <div class="headshot placeholder" data-src="/media/headshot.webp" data-alt="Abraham Zhong" aria-hidden="true">Headshot</div>
+            <div>
+              <h3>Hi, I'm Abraham</h3>
+              <p>
+                I'm from Mountain View, California, and I fell in love with engineering through Science Olympiad in high school.
+                From there I got hooked on 3D printers and everything I could make with them. I wanted mine faster and quieter,
+                so I started tinkering with controls and firmware, and building and tuning my own Voron 0.2 showed me how much
+                of a machine's performance comes from the software driving it.
+              </p>
+              <p>
+                That got me wondering what machines could do if they could see. In my computer vision class, I built a model that
+                turns videos into parametric CAD files you can 3D print or keep modeling with, and I've been diving deeper into computer vision
+                ever since: a segmentation pipeline for analyzing air hockey footage for imitation learning on a robot air hockey table,
+                a robot arm that finds a ball tossed at it and catches it, and data augmentation for applying the UMI pipeline to excavators and robot arms.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="desk-files">
+        <button type="button" class="fruit-file" data-fruit="apple" data-f="0" title="Drag me toward the Recycle Bin"><span class="fruit-sprite" style="--f:0" aria-hidden="true"></span><span class="desk-label">Apple</span></button>
+        <button type="button" class="fruit-file" data-fruit="banana" data-f="1" title="Drag me toward the Recycle Bin"><span class="fruit-sprite" style="--f:1" aria-hidden="true"></span><span class="desk-label">Banana</span></button>
+        <button type="button" class="recycle" id="recycle-bin" title="Recycle Bin"><span class="bin-sprite" aria-hidden="true"></span><span class="desk-label">Recycle Bin</span></button>
+      </div>
+    </main>
+
+    {/* XP-style taskbar: sticks to the bottom of the screen, then scrolls away at the end of the desktop */}
+    <nav class="taskbar" aria-label="Main">
+      <a href="#top" class="start" aria-label="Start an auto-scrolling tour of the site"><span class="start-icon" aria-hidden="true"></span><span class="start-label">start</span></a>
+      <div class="task-buttons">
+        <a href="#projects" class="task" data-section="projects">Projects</a>
+        <a href="#about" class="task" data-section="about">About</a>
+        <a href="#contact" class="task" data-section="contact">Contact</a>
+      </div>
+      <div class="task-windows" id="task-windows"></div>
+      <div class="tray">
+        <span class="clock" id="clock-wrap" title="Clock"><span class="clock-ico" aria-hidden="true"></span><span id="clock"></span></span>
+      </div>
+      <button type="button" class="saver-btn" id="saver-btn" title="Screensaver" aria-label="Start screensaver"></button>
+    </nav>
+
+    {/* XP-style notification balloon */}
+    <div class="balloon" id="balloon" role="status" hidden>
+      <button type="button" class="balloon-x" id="balloon-x" aria-label="Dismiss">x</button>
+      <strong id="balloon-title"></strong>
+      <p id="balloon-body"></p>
+    </div>
+    {/* Easter egg */}
+    <div class="raccoon" id="raccoon" aria-hidden="true" hidden><div class="raccoon-sprite"></div></div>
+  </div>
+  <p class="saver-hint" id="saver-hint" aria-live="polite" hidden>Click the bar at the bottom right to return</p>
+
+  {/* ===== World 2: past the taskbar — blue screen ===== */}
+  <section id="contact" class="bsod gated">
+    {/* shutdown sequence: plays before the blue screen is allowed to show */}
+    <div class="boot" aria-hidden="true">
+      <div class="boot-inner">
+        <p class="boot-line" data-text="Closing windows..." hidden></p>
+        <p class="boot-line" data-text="Putting the bunnies to bed..." hidden></p>
+        <p class="boot-line" data-text="Turning off the sun..." hidden></p>
+        <p class="boot-line" data-text="Saving your grass" hidden></p>
+        <div class="boot-bar" hidden><span></span></div>
+        <p class="boot-pct" hidden>0%</p>
+      </div>
+      <div class="boot-blue"></div>
+    </div>
+    <div class="bsod-inner">
+      <p class="bsod-title reveal"><span>ABRAHAM ZHONG</span></p>
+      <p class="reveal" style="--i:1">A problem has been detected and the desktop has been shut down to prevent damage to your free time.</p>
+      <p class="reveal" style="--i:2">If this is the first time you've seen this screen, reach out. If this screen appears again, follow these steps:</p>
+
+      <dl class="bsod-contact reveal" style="--i:3">
+        <div><dt>Email</dt><dd><a href="mailto:abzhong@stanford.edu">abzhong@stanford.edu</a></dd></div>
+        <div><dt>Phone</dt><dd><a href="tel:+15512482491">(551) 248-2491</a></dd></div>
+        <div><dt>GitHub</dt><dd><a href="https://github.com/abezh10" target="_blank" rel="noopener">github.com/abezh10</a></dd></div>
+        <div><dt>LinkedIn</dt><dd><a href="https://linkedin.com/in/abzhong" target="_blank" rel="noopener">linkedin.com/in/abzhong</a></dd></div>
+      </dl>
+
+      <p class="reveal" style="--i:4">Technical information:</p>
+      <p class="reveal" style="--i:5">*** STOP: 0x000000AZ (0x00005512, 0x00482491, 0x00000042, 0x00000000)</p>
+
+      <p class="reveal" style="--i:6"><a href="#top" class="bsod-restart">Press here to go back outside<span class="cursor">_</span></a></p>
+
+      <p class="bsod-copy reveal" style="--i:7">Copyright © <span id="year">2026</span> Abraham Zhong. All rights reserved.</p>
+    </div>
+  </section>
+
+  <script>import '../scripts/home.js';</script>
+</body>
+</html>

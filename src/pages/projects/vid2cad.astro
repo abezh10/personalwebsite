@@ -1,0 +1,37 @@
+---
+// Page shell (title bar, back links, shared head) lives in src/layouts/ProjectLayout.astro.
+// title: the heading and browser tab. description: the line search results and link previews show.
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
+---
+<ProjectLayout
+  slug="vid2cad"
+  windowTitle="Vid2CAD.exe"
+  title="Vid2CAD"
+  description="A model from my computer vision class that turns a short orbit video of a part into an editable CadQuery CAD program you can 3D print or keep modeling."
+>
+  <p class="lede">A model from my computer vision class that turns a short orbit video of a part into an editable CadQuery CAD program you can 3D print or keep modeling.</p>
+
+  {/* Photos, full size, top to bottom. To add one: put a "gallery vid2cad/<name> <file>" line in
+       scripts/optimize-media.sh, run it, then copy a <figure> line below (width/height/--r come from the image size). */}
+  <div class="photos">
+    <figure><video class="play-once" src="/media/vid2cad.mp4" poster="/media/vid2cad.webp" style="--r:1.3333" muted playsinline controls preload="metadata" aria-label="Vid2CAD video"></video></figure>
+    <figure><img src="/media/vid2cad/architecture.webp" alt="Model architecture" width="1600" height="569" style="--r:2.812" loading="lazy" decoding="async"><figcaption>Model architecture</figcaption></figure>
+    <figure><img src="/media/vid2cad/data-funnel.webp" alt="Dataset construction pipeline" width="1474" height="911" style="--r:1.618" loading="lazy" decoding="async"><figcaption>Dataset construction pipeline</figcaption></figure>
+    <figure><img src="/media/vid2cad/results.webp" alt="Ground truth vs. predicted CAD" width="702" height="1600" style="--r:0.4387" loading="lazy" decoding="async"><figcaption>Ground truth vs. predicted CAD</figcaption></figure>
+  </div>
+
+  {/* Descriptions (coming later). Starter sections to paste above the photos:
+  <section>
+    <h2>Overview</h2>
+    <p>What this project is and why you built it.</p>
+  </section>
+  <section>
+    <h2>How it works</h2>
+    <p>The main parts (hardware, software) and how they fit together.</p>
+  </section>
+  <section>
+    <h2>What I learned</h2>
+    <p>The hardest problem you hit and how you solved it.</p>
+  </section>
+  */}
+</ProjectLayout>

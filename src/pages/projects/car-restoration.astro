@@ -1,0 +1,42 @@
+---
+// Page shell (title bar, back links, shared head) lives in src/layouts/ProjectLayout.astro.
+// title: the heading and browser tab. description: the line search results and link previews show.
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
+---
+<ProjectLayout
+  slug="car-restoration"
+  windowTitle="CarRestoration.exe"
+  title="Car Restoration"
+  description="Restored and upgraded a BMW 3 Series sedan: new brakes, headlights, bumper, and more."
+>
+  <p class="lede">Restored and upgraded a BMW 3 Series sedan: new brakes, headlights, bumper, and more.</p>
+
+  {/* Photos, full size, top to bottom. To add one: put a "gallery car-restoration/<name> <file>" line in
+       scripts/optimize-media.sh, run it, then copy a <figure> line below (width/height/--r come from the image size). */}
+  <div class="photos">
+    <figure><img src="/media/car-restoration.webp" alt="Car Restoration" width="1600" height="900" style="--r:1.7778"></figure>
+    <figure><img src="/media/car/teardown.webp" alt="Front end torn down" width="900" height="1600" style="--r:0.5625" loading="lazy" decoding="async"><figcaption>Front end torn down</figcaption></figure>
+    <figure><img src="/media/car/night-work.webp" alt="Late-night work under the hood" width="900" height="1600" style="--r:0.5625" loading="lazy" decoding="async"><figcaption>Late-night work under the hood</figcaption></figure>
+    <figure><img src="/media/car/brakes.webp" alt="New brake rotor" width="900" height="1600" style="--r:0.5625" loading="lazy" decoding="async"><figcaption>New brake rotor</figcaption></figure>
+    <figure><img src="/media/car/headlights.webp" alt="New headlights and fog lights" width="900" height="1600" style="--r:0.5625" loading="lazy" decoding="async"><figcaption>New headlights and fog lights</figcaption></figure>
+    <figure><img src="/media/car/head-unit-wiring.webp" alt="Head unit wiring" width="1600" height="900" style="--r:1.7778" loading="lazy" decoding="async"><figcaption>Head unit wiring</figcaption></figure>
+    <figure><img src="/media/car/dash-screen.webp" alt="New dash screen" width="900" height="1600" style="--r:0.5625" loading="lazy" decoding="async"><figcaption>New dash screen</figcaption></figure>
+    <figure><img src="/media/car/side.webp" alt="Finished: side view" width="1600" height="900" style="--r:1.7778" loading="lazy" decoding="async"><figcaption>Finished: side view</figcaption></figure>
+    <figure><img src="/media/car/rear.webp" alt="Finished: rear view" width="900" height="1600" style="--r:0.5625" loading="lazy" decoding="async"><figcaption>Finished: rear view</figcaption></figure>
+  </div>
+
+  {/* Descriptions (coming later). Starter sections to paste above the photos:
+  <section>
+    <h2>Overview</h2>
+    <p>What this project is and why you built it.</p>
+  </section>
+  <section>
+    <h2>How it works</h2>
+    <p>The main parts (hardware, software) and how they fit together.</p>
+  </section>
+  <section>
+    <h2>What I learned</h2>
+    <p>The hardest problem you hit and how you solved it.</p>
+  </section>
+  */}
+</ProjectLayout>

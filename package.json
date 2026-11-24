@@ -1,0 +1,20 @@
+{
+  "name": "abrahamzhong-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "media": "./scripts/optimize-media.sh"
+  },
+  "dependencies": {
+    "@fontsource/pixelify-sans": "^5.3.0",
+    "@fontsource/source-sans-3": "^5.3.1",
+    "@fontsource/vt323": "^5.3.0",
+    "astro": "^7.4.13"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  }
+}

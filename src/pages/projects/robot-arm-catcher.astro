@@ -1,0 +1,36 @@
+---
+// Page shell (title bar, back links, shared head) lives in src/layouts/ProjectLayout.astro.
+// title: the heading and browser tab. description: the line search results and link previews show.
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
+---
+<ProjectLayout
+  slug="robot-arm-catcher"
+  windowTitle="RobotArmCatcher.exe"
+  title="Robot Arm Catcher"
+  description="In progress: a robot arm that spots a ball flying through the air and catches it."
+>
+  <p class="lede">In progress: a robot arm that spots a ball flying through the air and catches it.</p>
+
+  {/* Photos, full size, top to bottom. To add one: put a "gallery robot-arm-catcher/<name> <file>" line in
+       scripts/optimize-media.sh, run it, then copy a <figure> line below (width/height/--r come from the image size). */}
+  <div class="photos">
+    <figure><div class="placeholder" data-src="/media/robot-arm-catcher.webp" data-alt="Robot Arm Catcher">Photo coming soon</div></figure>
+  </div>
+
+  <p class="muted">More photos coming soon.</p>
+
+  {/* Descriptions (coming later). Starter sections to paste above the photos:
+  <section>
+    <h2>Overview</h2>
+    <p>What this project is and why you built it.</p>
+  </section>
+  <section>
+    <h2>How it works</h2>
+    <p>The main parts (hardware, software) and how they fit together.</p>
+  </section>
+  <section>
+    <h2>What I learned</h2>
+    <p>The hardest problem you hit and how you solved it.</p>
+  </section>
+  */}
+</ProjectLayout>

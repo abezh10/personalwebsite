@@ -1,0 +1,42 @@
+---
+// Page shell (title bar, back links, shared head) lives in src/layouts/ProjectLayout.astro.
+// title: the heading and browser tab. description: the line search results and link previews show.
+import ProjectLayout from '../../layouts/ProjectLayout.astro';
+---
+<ProjectLayout
+  slug="tars"
+  windowTitle="TARS.exe"
+  title="TARS"
+  description="A 6-foot walking replica of TARS from Interstellar, from CAD to first steps in 3 months."
+>
+  <p class="lede">A 6-foot walking replica of TARS from <em>Interstellar</em>, from CAD to first steps in 3 months.</p>
+
+  {/* Photos, full size, top to bottom. To add one: put a "gallery tars/<name> <file>" line in
+       scripts/optimize-media.sh, run it, then copy a <figure> line below (width/height/--r come from the image size). */}
+  <div class="photos">
+    <figure><img src="/media/tars.webp" alt="TARS" width="700" height="394" style="--r:1.7766"></figure>
+    <figure><img src="/media/tars/full-tars.webp" alt="Full TARS" width="1200" height="1600" style="--r:0.75" loading="lazy" decoding="async"><figcaption>Full TARS</figcaption></figure>
+    <figure><img src="/media/tars/prototype.webp" alt="Early prototype" width="1600" height="1200" style="--r:1.3333" loading="lazy" decoding="async"><figcaption>Early prototype</figcaption></figure>
+    <figure><img src="/media/tars/cycloidal-design.webp" alt="Cycloidal gearbox design" width="1200" height="1600" style="--r:0.75" loading="lazy" decoding="async"><figcaption>Cycloidal gearbox design</figcaption></figure>
+    <figure><img src="/media/tars/cycloidal-assembly.webp" alt="Cycloidal gearbox assembly" width="1600" height="1204" style="--r:1.3289" loading="lazy" decoding="async"><figcaption>Cycloidal gearbox assembly</figcaption></figure>
+    <figure><img src="/media/tars/full-cycloidal-assembly.webp" alt="Full cycloidal assembly" width="1200" height="1600" style="--r:0.75" loading="lazy" decoding="async"><figcaption>Full cycloidal assembly</figcaption></figure>
+    <figure><img src="/media/tars/cycloidal-mounted.webp" alt="Cycloidal gearbox mounted" width="1200" height="1600" style="--r:0.75" loading="lazy" decoding="async"><figcaption>Cycloidal gearbox mounted</figcaption></figure>
+    <figure><img src="/media/tars/gearboxes.webp" alt="Gearboxes" width="1600" height="1200" style="--r:1.3333" loading="lazy" decoding="async"><figcaption>Gearboxes</figcaption></figure>
+    <figure><img src="/media/tars/smarter-every-day.webp" alt="Photo with Smarter Every Day" width="1600" height="1200" style="--r:1.3333" loading="lazy" decoding="async"><figcaption>Photo with Smarter Every Day</figcaption></figure>
+  </div>
+
+  {/* Descriptions (coming later). Starter sections to paste above the photos:
+  <section>
+    <h2>Overview</h2>
+    <p>What this project is and why you built it.</p>
+  </section>
+  <section>
+    <h2>How it works</h2>
+    <p>The main parts (hardware, software) and how they fit together.</p>
+  </section>
+  <section>
+    <h2>What I learned</h2>
+    <p>The hardest problem you hit and how you solved it.</p>
+  </section>
+  */}
+</ProjectLayout>

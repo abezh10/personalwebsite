@@ -65,13 +65,14 @@ html.at-bsod .scene { visibility: hidden; }
 }
 #sky-layer { position: absolute; inset: 0; }
 
-/* Calm mode: the visitor's first scroll softens the background and clears out the moving scenery
-   (clouds, birds, bunnies). It stays that way until a refresh. The screensaver still shows the full scene. */
-#scene-canvas, #sky-layer { transition: filter 0.6s ease, transform 0.6s ease, opacity 0.6s ease, visibility 0s; }
+/* Calm mode: once the visitor scrolls down, the background goes soft and the moving scenery
+   (clouds, birds, bunnies) and the desktop icons (Apple, Banana, Recycle Bin) fade out.
+   Back at the very top they all return. The screensaver always shows the full scene. */
+#scene-canvas, #sky-layer, .desk-files { transition: filter 0.6s ease, transform 0.6s ease, opacity 0.6s ease, visibility 0s; }
 html.calm:not(.screensaver) #scene-canvas { filter: blur(8px); transform: scale(1.06); }
-html.calm:not(.screensaver) #sky-layer { opacity: 0; visibility: hidden; transition: opacity 0.6s ease, visibility 0s 0.6s; }
+html.calm:not(.screensaver) :is(#sky-layer, .desk-files) { opacity: 0; visibility: hidden; transition: opacity 0.6s ease, visibility 0s 0.6s; }
 html.calm:not(.screensaver) #sky-layer * { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { #scene-canvas, #sky-layer { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { #scene-canvas, #sky-layer, .desk-files { transition: none !important; } }
 
 .cloud {
   position: absolute;

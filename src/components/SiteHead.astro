@@ -1,0 +1,17 @@
+---
+// Tags every page shares. The fonts are served from this site (no trip to Google Fonts),
+// and Astro bundles them with global.css into one minified, cache-forever stylesheet.
+// Latin-only font files: every page is English (if you add other scripts, import the full weight files).
+import '@fontsource/pixelify-sans/latin-400.css';
+import '@fontsource/pixelify-sans/latin-500.css';
+import '@fontsource/pixelify-sans/latin-700.css';
+import '@fontsource/source-sans-3/latin-400.css';
+import '@fontsource/source-sans-3/latin-600.css';
+import '@fontsource/source-sans-3/latin-700.css';
+import '@fontsource/vt323/latin-400.css';
+import '../styles/global.css';
+---
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1b5cc8">
