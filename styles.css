@@ -1,0 +1,886 @@
+/* Pixel-art XP desktop (sky + grass) → blue screen ending */
+:root {
+  --text: #1d2b3a;
+  --muted: #4d5f73;
+  --link: #0a5bd6;
+  --sun: #ffe066;
+  --navy: #0b2a6f;
+  --px: 4px; /* size of one scene pixel; set by script */
+  --taskbar-h: 42px;
+  --ticker-h: 48px;  /* Latest bar above the taskbar */
+  --ticker-gap: 10px;
+  --desk-top: 56px;  /* space above the hero */
+  --max: 1080px;
+  --pixel: "Pixelify Sans", "Trebuchet MS", monospace;
+  --body: "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: "VT323", "Lucida Console", "Courier New", monospace;
+  --bsod: #0000aa;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 16px;
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: #1b5cc8;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 18px;
+  line-height: 1.42; /* same line spacing as before the size bump */
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+img { max-width: 100%; display: block; }
+a { color: var(--link); }
+
+/* Reusable pixel border: notched corners + hard drop shadow, no blur */
+.window, .panel, .px-btn, .placeholder, .headshot, .tile-media {
+  --bc: var(--navy);
+}
+
+/* ---------- Pixel scene ---------- */
+/* past the desktop: no hills behind the blue screen, even on overscroll */
+html.at-bsod, html.at-bsod body { background: var(--bsod); }
+html.at-bsod:has(.bsod.gated:not(.booted)), html.at-bsod:has(.bsod.gated:not(.booted)) body { background: #000; }
+html.at-bsod .scene { visibility: hidden; }
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+#scene-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+#sky-layer { position: absolute; inset: 0; }
+
+/* Calm mode: the visitor's first scroll softens the background and clears out the moving scenery
+   (clouds, birds, bunnies). It stays that way until a refresh. The screensaver still shows the full scene. */
+#scene-canvas, #sky-layer { transition: filter 0.6s ease, transform 0.6s ease, opacity 0.6s ease, visibility 0s; }
+html.calm:not(.screensaver) #scene-canvas { filter: blur(8px); transform: scale(1.06); }
+html.calm:not(.screensaver) #sky-layer { opacity: 0; visibility: hidden; transition: opacity 0.6s ease, visibility 0s 0.6s; }
+html.calm:not(.screensaver) #sky-layer * { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { #scene-canvas, #sky-layer { transition: none !important; } }
+
+.cloud {
+  position: absolute;
+  left: 0;
+  width: calc(var(--w) * var(--px) * var(--scale, 1));
+  height: calc(var(--h) * var(--px) * var(--scale, 1));
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  from { transform: translateX(-60vw); }
+  to   { transform: translateX(110vw); }
+}
+.bird-path {
+  position: absolute;
+  left: 0;
+  animation: fly linear infinite;
+}
+.bird {
+  width: calc(7 * var(--px));
+  height: calc(4 * var(--px));
+  background-size: calc(14 * var(--px)) 100%;
+  image-rendering: pixelated;
+  animation: flap 0.5s steps(2) infinite;
+}
+@keyframes flap {
+  from { background-position: 0 0; }
+  to   { background-position: calc(-14 * var(--px)) 0; }
+}
+@keyframes fly {
+  0%   { transform: translate(-10vw, 0); }
+  25%  { transform: translate(20vw, -3vh); }
+  50%  { transform: translate(50vw, 1vh); }
+  75%  { transform: translate(80vw, -2vh); }
+  100% { transform: translate(110vw, 0); }
+}
+
+/* ---------- Layout ---------- */
+.world { position: relative; }
+.desktop {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--desk-top) max(18px, env(safe-area-inset-left)) 120px max(18px, env(safe-area-inset-right));
+}
+
+/* ---------- Pixel panel ---------- */
+.panel {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 -4px 0 0 var(--bc), 0 4px 0 0 var(--bc), -4px 0 0 0 var(--bc), 4px 0 0 0 var(--bc),
+    8px 8px 0 0 rgba(0, 25, 80, 0.3);
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  /* the hero fills the first screen, down to just above the taskbar; the Latest bar is its bottom row */
+  min-height: calc(100svh - var(--desk-top) - var(--taskbar-h) - env(safe-area-inset-bottom) - var(--ticker-gap));
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  grid-template-rows: 1fr auto;
+  gap: 44px;
+  align-items: center;
+}
+.hero > .ticker { grid-column: 1 / -1; align-self: end; }
+h1, h2, h3, .title, .px-btn, .ticker, .taskbar, .placeholder { font-family: var(--pixel); letter-spacing: 0.03em; }
+h1 {
+  font-size: clamp(46px, 7.7vw, 88px);
+  line-height: 1;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: #fff;
+  text-shadow: 4px 4px 0 var(--navy);
+}
+.accent { color: var(--sun); }
+.hero-body { padding: 18px 20px; max-width: 520px; margin: 0 0 28px 4px; }
+.hero-body p { margin: 0; font-family: var(--pixel); font-size: 22px; line-height: 1.45; letter-spacing: 0.03em; }
+.hero-body .accent { color: #b07d00; font-weight: 700; } /* darker gold: readable on the white box */
+.hero-actions { display: flex; gap: 20px; flex-wrap: wrap; padding-left: 4px; }
+.hero-img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+
+/* ---------- Pixel buttons ---------- */
+.px-btn {
+  --bc: #0b3f99;
+  display: inline-block;
+  padding: 10px 18px;
+  font-size: 19px;
+  font-weight: 500;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 2px 2px 0 rgba(0, 30, 90, 0.6);
+  background: linear-gradient(#7cc4ff 0 30%, #3a8ff0 30% 100%);
+  box-shadow:
+    0 -4px 0 0 var(--bc), 0 4px 0 0 var(--bc), -4px 0 0 0 var(--bc), 4px 0 0 0 var(--bc),
+    inset 0 -4px 0 0 rgba(0, 40, 120, 0.35),
+    6px 6px 0 0 rgba(0, 25, 80, 0.3);
+}
+.px-btn.green {
+  --bc: #1d6410;
+  background: linear-gradient(#a6ec73 0 30%, #4bb12f 30% 100%);
+  text-shadow: 2px 2px 0 rgba(10, 60, 0, 0.6);
+}
+.px-btn:hover { filter: brightness(1.1); }
+.px-btn:active { transform: translate(4px, 4px); box-shadow: 0 -4px 0 0 var(--bc), 0 4px 0 0 var(--bc), -4px 0 0 0 var(--bc), 4px 0 0 0 var(--bc), inset 0 4px 0 0 rgba(0, 40, 120, 0.35); }
+.px-btn.small { padding: 5.5px 13px; font-size: 17px; }
+
+/* ---------- Pixel XP windows ---------- */
+.window {
+  --bc: #0a2d8c;
+  margin: 4px;
+  background: #f4f8ff;
+  box-shadow:
+    0 -4px 0 0 var(--bc), 0 4px 0 0 var(--bc), -4px 0 0 0 var(--bc), 4px 0 0 0 var(--bc),
+    10px 10px 0 0 rgba(0, 25, 80, 0.32);
+}
+.title-bar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 6px 0 10px;
+  background: linear-gradient(#5aa2ff 0 4px, #1e6ef0 4px 20px, #0b55da 20px 28px, #0842b8 28px 100%);
+  color: #fff;
+  font-size: 17.5px;
+  font-weight: 500;
+  text-shadow: 2px 2px 0 #0a2a80;
+}
+.title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title-buttons { display: flex; gap: 4px; flex-shrink: 0; }
+.title-bar { user-select: none; -webkit-user-select: none; }
+.title-buttons button, .title-buttons a {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(#5d9cf8 0 50%, #2a68e0 50% 100%);
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.title-buttons button svg, .title-buttons a svg { width: 10px; height: 10px; shape-rendering: crispEdges; }
+.title-buttons button:hover, .title-buttons a:hover { filter: brightness(1.2); }
+.title-buttons button:active { box-shadow: inset 0 0 0 2px #fff, inset 3px 3px 0 2px rgba(0, 0, 0, 0.3); }
+.title-buttons button:focus-visible, .vbtn:focus-visible, .desk-icon:focus-visible .desk-label { outline: 2px dotted #fff; outline-offset: 1px; }
+.title-buttons [data-act="close"] { background: linear-gradient(#f07a5a 0 50%, #d0401c 50% 100%); }
+
+[hidden] { display: none !important; }
+
+/* ---------- Maximized window ---------- */
+body.has-max { overflow: hidden; }
+.window.maximized {
+  position: fixed;
+  z-index: 30;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: calc(var(--taskbar-h) + env(safe-area-inset-bottom) + 10px);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.window.maximized > .window-body { flex: 1; min-height: 0; overflow: auto; }
+.tile.maximized:hover { transform: none; }
+.tile.maximized .tile-media { width: min(100%, calc(55vh * 16 / 9)); }
+.win-ghost { margin: 4px; }
+
+/* ---------- Closed window → desktop icon ---------- */
+.desk-icon {
+  justify-self: center;
+  align-self: center;
+  width: 150px;
+  margin: 12px auto;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--pixel);
+  font-size: 17px;
+  text-shadow: 2px 2px 0 var(--navy);
+}
+.desk-ico {
+  width: 52px;
+  height: 42px;
+  background: linear-gradient(#1e6ef0 0 10px, #f4f8ff 10px 100%);
+  box-shadow: 0 0 0 4px #0a2d8c, 6px 6px 0 4px rgba(0, 25, 80, 0.3);
+}
+.desk-label { padding: 0 6px; }
+.recycle .desk-label, .fruit-file .desk-label { line-height: 18px; }
+.desk-hint { font-family: var(--mono); font-size: 18px; opacity: 0.85; }
+.desk-icon:hover .desk-label { background: #0b55da; }
+
+/* ---------- Photo viewer ---------- */
+.viewer-body { display: flex; flex-direction: column; }
+.viewer-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #0d1a33;
+  overflow: hidden;
+  cursor: zoom-in;
+  touch-action: pan-y;
+  outline: none;
+}
+.viewer.maximized .viewer-stage { aspect-ratio: auto; flex: 1; cursor: default; }
+.viewer-stage > img, .viewer-stage > video, .viewer-empty {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.viewer.maximized .viewer-stage > img,
+.viewer.maximized .viewer-stage > video { object-fit: contain; }
+.viewer-empty { place-content: center; gap: 4px; text-align: center; font-size: 23px; }
+.viewer-empty small { font-family: var(--mono); font-size: 20px; color: #6a88aa; }
+.viewer-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: linear-gradient(#eef4ff 0 50%, #dbe6f8 50% 100%);
+  border-top: 2px solid #9fb8de;
+  font-family: var(--pixel);
+  font-size: 16px;
+}
+.vbtn {
+  width: 32px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(#a6ec73 0 40%, #4bb12f 40% 100%);
+  box-shadow: inset 0 0 0 2px #1d6410;
+}
+.vbtn svg { width: 12px; height: 12px; shape-rendering: crispEdges; }
+.vbtn:hover { filter: brightness(1.1); }
+.vbtn:active { box-shadow: inset 0 0 0 2px #1d6410, inset 3px 3px 0 2px rgba(0, 0, 0, 0.25); }
+.viewer-caption { flex: 1; min-width: 0; padding-left: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.viewer-count { color: var(--muted); flex-shrink: 0; }
+.tile-media[role="button"] { cursor: zoom-in; }
+.tile-media[role="button"]:focus-visible { outline: 3px dotted var(--navy); outline-offset: 2px; }
+.window-body { padding: 18px; }
+.window-body.flush { padding: 0; overflow: hidden; }
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  color: #4a6c90;
+  font-size: 16px;
+  background-color: #cfe6fb;
+  background-image: repeating-conic-gradient(#bcdcf8 0 25%, transparent 0 50%);
+  background-size: 16px 16px;
+}
+
+/* ---------- Ticker ---------- */
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--ticker-h);
+  margin: 0 4px;
+  padding: 0 10px;
+  overflow: hidden;
+}
+.ticker strong {
+  flex-shrink: 0;
+  padding: 2px 12px;
+  color: #fff;
+  font-weight: 500;
+  background: linear-gradient(#a6ec73 0 35%, #4bb12f 35% 100%);
+  box-shadow: inset 0 0 0 2px #1d6410;
+  text-shadow: 2px 2px 0 rgba(10, 60, 0, 0.6);
+}
+.ticker-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.3s steps(3), transform 0.3s steps(3);
+}
+.ticker-text.out { opacity: 0; transform: translateY(-8px); }
+
+/* ---------- Section labels ---------- */
+section[id]:not(.hero):not(.bsod) { padding-top: 64px; }
+.section-label {
+  margin: 0 0 24px;
+  font-size: clamp(32px, 4.6vw, 48px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 4px 4px 0 var(--navy);
+}
+
+/* ---------- Project tiles ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+.tile { display: flex; flex-direction: column; }
+.tile .window-body { display: flex; flex-direction: column; align-items: flex-start; flex: 1; }
+.tile-media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin-bottom: 14px;
+  box-shadow: 0 0 0 2px #8fb5e0;
+}
+video.tile-media { display: block; background: #0d1a33; }
+.tile h3 { font-size: 24px; font-weight: 500; line-height: 1.15; margin: 0 0 6px; }
+.tile p { margin: 0 0 18px; color: var(--muted); flex: 1; }
+@media (hover: hover) {
+  .tile:hover { transform: translate(-4px, -4px); }
+}
+
+/* ---------- About ---------- */
+.about { display: flex; align-items: center; gap: 32px; padding: 28px 32px; }
+.headshot {
+  flex: 0 0 180px;
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--navy), 8px 8px 0 4px rgba(0, 25, 80, 0.3);
+  margin: 8px;
+}
+.about h3 { font-size: 29px; font-weight: 500; margin: 0 0 8px; }
+.about p { font-size: 18px; color: var(--muted); margin: 0; }
+
+/* ---------- XP taskbar (sticky until the desktop ends) ---------- */
+.taskbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  height: calc(var(--taskbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(#5b9bf8 0 3px, #2f72e8 3px 8px, #245edb 8px 34px, #1a46b8 34px 100%);
+  border-top: 2px solid #0c3db0;
+  font-size: 16.5px;
+}
+.start {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px 0 12px;
+  background: linear-gradient(#7fd36a 0 5px, #3fa83f 5px 24px, #2f8f2f 24px 34px, #217a21 34px 100%);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, calc(100% - 12px) 4px, calc(100% - 6px) 4px, calc(100% - 6px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 6px) calc(100% - 10px), calc(100% - 6px) calc(100% - 4px), calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) 100%, 0 100%);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  font-style: italic;
+  text-decoration: none;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+.start:hover { filter: brightness(1.1); }
+.start-icon {
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(#7cc4ff 0 55%, #4bb12f 55% 100%);
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.task-buttons {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  min-width: 0;
+}
+.task {
+  flex: 0 1 150px;
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(#6aa6fa 0 4px, #3c81f3 4px 100%);
+  box-shadow: inset 0 0 0 2px #1a4fc0;
+}
+.task:hover { filter: brightness(1.12); }
+.task.active { background: #1c4cb4; box-shadow: inset 0 0 0 2px #0c2f80, inset 3px 3px 0 0 rgba(0, 0, 0, 0.35); }
+.task-windows { display: flex; align-items: center; gap: 4px; padding-right: 8px; min-width: 0; }
+.task-windows:empty { display: none; }
+.taskbar .win-task { flex: 0 1 150px; min-width: 34px; gap: 6px; border: 0; font: inherit; cursor: pointer; }
+.win-task-ico { width: 12px; height: 10px; flex-shrink: 0; background: linear-gradient(#1e6ef0 0 3px, #fff 3px 100%); box-shadow: 0 0 0 1px #0a2d8c; }
+.win-task-label { overflow: hidden; text-overflow: ellipsis; }
+/* "show desktop" style sliver at the far right: starts the screensaver */
+.saver-btn {
+  width: 16px;
+  flex-shrink: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: linear-gradient(#5fc6fb 0 4px, #1f9cf0 4px 100%);
+  box-shadow: inset 2px 0 0 #0a4fb5, inset 4px 0 0 rgba(255, 255, 255, 0.35);
+}
+.saver-btn:hover, .saver-btn:focus-visible { filter: brightness(1.2); outline: none; }
+
+/* screensaver: just the sky, hills and animals, no cursor */
+html.screensaver { overflow: hidden; }
+html.screensaver .world, html.screensaver #contact { visibility: hidden; }
+html.screensaver .taskbar { visibility: visible; position: fixed; left: 0; right: 0; bottom: 0; } /* only the hills and the taskbar stay */
+html.screensaver .saver-btn { background: #0c62c8; box-shadow: inset 2px 0 0 #0a3d8f, inset 3px 3px 0 rgba(0, 0, 0, 0.35); }
+.saver-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--taskbar-h) + 24px);
+  transform: translateX(-50%);
+  z-index: 50;
+  margin: 0;
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 22px;
+  color: #fff;
+  background: rgba(0, 25, 80, 0.55);
+  text-shadow: 2px 2px 0 #0a4fb5;
+  pointer-events: none;
+  animation: saver-hint 3.5s steps(6, end) forwards;
+}
+.saver-hint[hidden] { display: none; }
+@keyframes saver-hint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  background: linear-gradient(#2fb3f7 0 4px, #0f8be8 4px 100%);
+  box-shadow: inset 2px 0 0 #0a4fb5;
+  color: #fff;
+}
+/* Tray clock: pixel clock face + readable time */
+:root { --clock-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23fff' d='M3 1h3v1H3zM2 2h5v1H2zM1 3h7v3H1zM2 6h5v1H2zM3 7h3v1H3z'/%3E%3Cpath fill='%230b2a6f' d='M3 0h3v1H3zM1 1h2v1H1zM6 1h2v1H6zM1 2h1v1H1zM7 2h1v1H7zM0 3h1v3H0zM8 3h1v3H8zM1 6h1v1H1zM7 6h1v1H7zM1 7h2v1H1zM6 7h2v1H6zM3 8h3v1H3zM4 2h1v3H4zM5 4h2v1H5z'/%3E%3C/svg%3E"); }
+.clock { display: flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 26px; line-height: 1; letter-spacing: 0.5px; text-shadow: 2px 2px 0 #0a4fb5; white-space: nowrap; }
+.clock-ico { width: 18px; height: 18px; flex-shrink: 0; background: var(--clock-ico) center / 100% 100% no-repeat; image-rendering: pixelated; filter: drop-shadow(2px 2px 0 #0a4fb5); }
+.clock.stolen .clock-ico { background: none; filter: none; outline: 2px dashed rgba(255, 255, 255, 0.6); outline-offset: -3px; }
+.clock.stolen #clock { opacity: 0.6; }
+.clock.returned .clock-ico { animation: clock-drop 0.7s steps(7, end); }
+.clock.returned #clock { animation: blink 0.25s steps(1) 4 0.7s; }
+@keyframes clock-drop { 0% { transform: translate(-16px, -22px); } 40% { transform: translate(-6px, -30px); } 70% { transform: translate(0, 0); } 85% { transform: translateY(-5px); } 100% { transform: none; } }
+@keyframes rattle { 50% { transform: translateX(-2px) rotate(-8deg); } }
+
+/* ---------- Recycle Bin desktop icon (the raccoon lives here) ---------- */
+.desk-files {
+  position: absolute;
+  top: calc(100svh - var(--taskbar-h) - var(--ticker-h) - var(--ticker-gap) - 128px);
+  left: 18px;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+}
+.desk-files .recycle { order: -1; } /* narrow screens: one row, bin first */
+/* wide screens have an empty left margin: stack Apple and Banana above the bin, XP-style */
+@media (min-width: 1320px) {
+  .desk-files { flex-direction: column; top: calc(100svh - var(--taskbar-h) - 128px - 234px); }
+  .desk-files .recycle { order: 0; }
+}
+.recycle, .fruit-file {
+  width: 100px;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--pixel);
+  font-size: 16px;
+  text-shadow: 2px 2px 0 var(--navy);
+}
+.bin-sprite {
+  --bn: 3px;
+  width: calc(21 * var(--bn));
+  height: calc(27 * var(--bn));
+  background: url(/sprites/bin.png) calc(var(--f, 0) * -21 * var(--bn)) 0 / calc(63 * var(--bn)) 100% no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0 rgba(0, 25, 80, 0.3));
+}
+.recycle:hover .desk-label, .recycle:focus-visible .desk-label { background: #0b55da; }
+.recycle:focus-visible { outline: none; }
+.recycle.rattle .bin-sprite { animation: rattle 0.12s steps(1) 4; }
+
+/* ---------- Fruit files: drag one out and the raccoon comes for it (sheet: 2 frames of 24x24) ---------- */
+.fruit-file { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.fruit-file:active { cursor: grabbing; }
+.fruit-sprite {
+  --bn: 3px;
+  display: block;
+  width: calc(24 * var(--bn));
+  height: calc(24 * var(--bn));
+  background: url(/sprites/fruit.png) calc(var(--f, 0) * -24 * var(--bn)) 0 / calc(48 * var(--bn)) 100% no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0 rgba(0, 25, 80, 0.3));
+}
+.fruit-file .fruit-sprite { margin-top: calc(3 * var(--bn)); } /* line labels up with the bin's */
+.fruit-file:hover .desk-label, .fruit-file:focus-visible .desk-label { background: #0b55da; }
+.fruit-file:focus-visible { outline: none; }
+.fruit-file.taken .fruit-sprite { opacity: 0.35; }
+.fruit-file.eaten .fruit-sprite { visibility: hidden; }
+.fruit-file.respawn .fruit-sprite { animation: fruit-pop 0.5s steps(5, end); }
+.fruit-file.nope .fruit-sprite { animation: rattle 0.12s steps(1) 3; }
+@keyframes fruit-pop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: none; } }
+.fruit-ghost { position: fixed; left: 0; top: 0; z-index: 36; pointer-events: none; transform-origin: 50% 50%; }
+
+/* ---------- Notification balloon ---------- */
+.balloon {
+  position: fixed;
+  right: 12px;
+  bottom: calc(var(--taskbar-h) + env(safe-area-inset-bottom) + var(--ticker-h) + var(--ticker-gap) + 16px);
+  z-index: 40;
+  width: min(310px, calc(100vw - 24px));
+  padding: 10px 30px 12px 12px;
+  background: #ffffe1;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.35;
+  box-shadow: 0 -3px 0 0 #1d2b3a, 0 3px 0 0 #1d2b3a, -3px 0 0 0 #1d2b3a, 3px 0 0 0 #1d2b3a, 7px 7px 0 0 rgba(0, 25, 80, 0.3);
+}
+.balloon::before, .balloon::after { content: ""; position: absolute; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.balloon::before { right: 26px; bottom: -17px; width: 14px; height: 14px; background: #1d2b3a; }
+.balloon::after { right: 29px; bottom: -9px; width: 8px; height: 8px; background: #ffffe1; }
+.balloon strong { display: block; margin-bottom: 2px; font-family: var(--pixel); font-weight: 700; }
+.balloon p { margin: 0; }
+.balloon-x { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; padding: 0; border: 0; background: none; cursor: pointer; font-family: var(--pixel); font-size: 15px; color: var(--text); }
+.balloon-x:hover { background: #f0d9a8; }
+
+/* ---------- Raccoon (sprite sheet: 13 frames of 28x25) ---------- */
+.raccoon { position: fixed; left: 0; top: 0; z-index: 35; pointer-events: none; }
+.raccoon-sprite {
+  width: calc(28 * var(--ru, 3px));
+  height: calc(25 * var(--ru, 3px));
+  background: url(/sprites/raccoon.png) calc(var(--f, 0) * -28 * var(--ru, 3px)) 0 / calc(364 * var(--ru, 3px)) 100% no-repeat;
+  image-rendering: pixelated;
+}
+.raccoon.left .raccoon-sprite { transform: scaleX(-1); }
+.raccoon.bg-rac { position: absolute; z-index: auto; } /* lives on the hill with the bunnies */
+/* the stolen clock, in its mouth */
+.raccoon.carrying::after {
+  content: "";
+  position: absolute;
+  left: calc(20.5 * var(--ru, 3px));
+  top: calc(16 * var(--ru, 3px));
+  width: calc(6 * var(--ru, 3px));
+  height: calc(6 * var(--ru, 3px));
+  background: var(--clock-ico) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+.raccoon.left.carrying::after { left: calc(1.5 * var(--ru, 3px)); }
+
+/* ---------- Bunnies (sprite sheet: 14 frames of 22x18) ---------- */
+.bunny { position: absolute; left: 0; top: 0; }
+.bunny-sprite {
+  width: calc(22 * var(--bu, 3px));
+  height: calc(18 * var(--bu, 3px));
+  background: url(/sprites/rabbit.png) calc(var(--f, 0) * -22 * var(--bu, 3px)) 0 / calc(308 * var(--bu, 3px)) 100% no-repeat;
+  image-rendering: pixelated;
+}
+.bunny-sprite.flip { transform: scaleX(-1); }
+
+/* ---------- Blue screen ---------- */
+.bsod {
+  position: relative;
+  background: var(--bsod);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 25px;
+  line-height: 1.3;
+  min-height: 100vh;
+  padding: 90px max(24px, env(safe-area-inset-left)) calc(60px + env(safe-area-inset-bottom));
+}
+/* faint CRT scanlines */
+.bsod::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(transparent 0 2px, rgba(0, 0, 0, 0.12) 2px 4px);
+}
+.bsod-inner { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+.bsod p { margin: 0 0 26px; }
+.bsod a { color: #fff; }
+.bsod-title { text-align: center; margin-bottom: 40px !important; }
+.bsod-title span { background: #aaaaaa; color: var(--bsod); padding: 2px 12px; }
+.bsod-code { letter-spacing: 0.04em; }
+.bsod-contact { margin: 0 0 26px; padding-left: 32px; }
+.bsod-contact div { display: flex; gap: 12px; }
+.bsod-contact dt { min-width: 120px; }
+.bsod-contact dt::after { content: " ....."; opacity: 0.6; }
+.bsod-contact dd { margin: 0; overflow-wrap: anywhere; }
+.bsod-contact a:hover, .bsod-restart:hover { background: #fff; color: var(--bsod); text-decoration: none; }
+.bsod-restart { text-decoration: none; }
+.cursor { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.bsod-copy { margin-top: 60px !important; opacity: 0.75; font-size: 21px; }
+
+/* ---------- Reveal: choppy pixel "open" ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px) scale(0.94);
+  transition: opacity 0.45s steps(5), transform 0.45s steps(5);
+  transition-delay: calc(var(--i, 0) * 100ms);
+}
+.reveal.in { opacity: 1; transform: none; }
+.bsod .reveal { transform: none; transition: opacity 0.1s steps(1); transition-delay: calc(var(--i, 0) * 180ms); }
+
+/* ---------- Shutdown transition: the blue screen stays dark until it finishes ---------- */
+.bsod.gated:not(.booted) { background: #000; }
+.bsod.gated:not(.booted) .reveal { opacity: 0; transition: none; }
+.bsod.gated:not(.booted) .bsod-inner { visibility: hidden; }
+.boot {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  background: #000;
+  color: #c9ccd2;
+  font-family: var(--mono);
+}
+.bsod.booted .boot { display: none; }
+.boot-inner { max-width: 860px; margin: 0 auto; padding: 90px max(24px, env(safe-area-inset-left)) 0; box-sizing: content-box; }
+.boot-line { margin: 0 0 10px !important; }
+.boot-line:last-of-type { margin-top: 30px !important; }
+.boot-bar { width: min(440px, 100%); height: 24px; padding: 4px; box-shadow: 0 0 0 3px #c9ccd2; margin: 12px 3px; }
+.boot-bar span {
+  display: block;
+  height: 100%;
+  width: calc(var(--p, 0) * 1%);
+  background: repeating-linear-gradient(90deg, #c9ccd2 0 12px, transparent 12px 16px);
+}
+.boot-pct { margin: 6px 0 0 !important; }
+/* crash: jitter, colour split, static */
+.boot.glitch .boot-inner { animation: jitter 0.09s steps(2) infinite; text-shadow: 3px 0 #ff2a4f, -3px 0 #29e0ff; }
+.boot.glitch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.18) 0 3px, transparent 3px 11px);
+  animation: static-roll 0.12s steps(3) infinite;
+}
+@keyframes jitter { 50% { transform: translate(-6px, 2px); } }
+@keyframes static-roll { to { background-position: 0 33px; } }
+.boot.dark .boot-inner { visibility: hidden; }
+/* CRT turning back on, in blue */
+.boot-blue { position: absolute; inset: 0; z-index: 2; background: var(--bsod); transform: scale(0, 0); }
+.boot.crt .boot-blue { animation: crt-on 0.55s steps(7, end) forwards; }
+@keyframes crt-on {
+  0% { transform: scale(0, 0.004); background: #fff; }
+  35% { transform: scale(1, 0.004); background: #fff; }
+  60% { transform: scale(1, 0.25); background: #6f6fff; }
+  100% { transform: scale(1, 1); background: var(--bsod); }
+}
+.tile.reveal.in { transition: opacity 0.45s steps(5), transform 0.1s steps(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .cloud, .bird-path, .bird, .cursor { animation: none; }
+  .bird-path { display: none; }
+  .ticker-text { transition: none; }
+  .recycle.rattle .bin-sprite { animation: none; }
+  .boot { display: none; }
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 900px) {
+  /* one column: intro text fills the first screen, then the Latest bar (just above the taskbar), then the Photo Viewer */
+  .hero { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; gap: 36px; min-height: 0; }
+  .hero-text {
+    min-height: calc(100svh - var(--desk-top) - 36px - var(--ticker-h) - var(--ticker-gap) - var(--taskbar-h) - env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hero > .ticker { order: 1; }
+  .hero-window { order: 2; }
+  .tiles { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 640px) {
+  .desk-files { position: relative; top: auto; left: auto; margin: 28px 0 0; }
+  .recycle, .fruit-file { width: 96px; font-size: 14px; }
+  .recycle .desk-label, .fruit-file .desk-label { line-height: 16px; }
+  .hero-body p { font-size: 19px; }
+  .about p { font-size: 17px; }
+  .bin-sprite, .fruit-sprite { --bn: 2px; }
+  :root { --taskbar-h: 44px; }
+  body { font-size: 17px; }
+  :root { --desk-top: 36px; }
+  .desktop { padding-bottom: 80px; }
+  .hero { text-align: center; }
+  .hero-body { margin-left: auto; margin-right: auto; text-align: left; }
+  .hero-actions { justify-content: center; }
+  .tiles { grid-template-columns: 1fr; gap: 26px; }
+  .about { flex-direction: column; text-align: center; padding: 24px 18px; gap: 18px; }
+  .headshot { flex-basis: auto; width: 150px; height: 150px; }
+  .start { font-size: 19px; padding: 0 17px 0 10px; }
+  .task { padding: 0 6px; font-size: 14px; flex: 1 1 0; justify-content: center; }
+  .win-task-label { display: none; }
+  .taskbar .win-task { flex: 0 0 34px; justify-content: center; }
+  .title-buttons button, .title-buttons a { width: 26px; height: 24px; }
+  .window.maximized { top: 4px; left: 4px; right: 4px; }
+  .bsod { font-size: 21px; padding-top: 64px; }
+  .bsod-contact { padding-left: 0; }
+  .bsod-contact div { flex-direction: column; gap: 0; margin-bottom: 10px; }
+  .bsod-contact dt::after { content: ""; }
+  .bsod-contact dt { opacity: 0.7; }
+}
+@media (max-width: 380px) {
+  .clock { display: none; }
+  .tray { padding: 0 6px; }
+}
+
+/* ---------- Project pages (projects/*.html) ---------- */
+body.project-page {
+  min-height: 100vh;
+  padding: 24px max(16px, env(safe-area-inset-left)) 40px max(16px, env(safe-area-inset-right));
+  background: linear-gradient(#1f63d6 0, #4f9cf2 55%, #8fd0ff 100%) fixed;
+}
+.project-win { max-width: 980px; margin: 0 auto; }
+.project-win > .title-bar { position: sticky; top: 0; z-index: 2; }
+.project-body { padding: 26px 36px 34px; }
+.back-link { font-family: var(--pixel); font-size: 17px; letter-spacing: 0.03em; color: var(--link); text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.project-body h1 {
+  margin: 14px 0 8px;
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.05;
+  color: var(--navy);
+  text-shadow: 3px 3px 0 #b9d6fb;
+}
+.lede { margin: 0 0 22px; font-size: 21px; color: var(--muted); max-width: 70ch; }
+.project-body section { margin-top: 34px; }
+.project-body h2 {
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  font-size: 27px;
+  font-weight: 500;
+  color: var(--navy);
+  border-bottom: 4px solid #cfe0f7;
+}
+.project-body section p { margin: 0 0 12px; max-width: 70ch; }
+.project-body .muted { color: var(--muted); }
+.back-btn { margin-top: 34px; }
+
+/* Photos: every one full size, top to bottom. Each is as wide as the window allows,
+   but never taller than the screen, so a tall photo still shows in one piece. --r is width / height. */
+.photos { display: grid; gap: 40px; }
+.photos figure { margin: 0; }
+.photos img, .photos video, .photos .placeholder {
+  display: block;
+  width: min(100%, calc((100svh - 130px) * var(--r, 1.7778)));
+  height: auto;
+  aspect-ratio: var(--r, 16 / 9);
+  margin: 0 auto;
+  object-fit: contain;
+  background: #fff; /* figures with transparent backgrounds stay readable */
+  box-shadow: 0 0 0 4px #0a2d8c;
+}
+.photos video { background: #0d1a33; }
+.photos .placeholder {
+  display: grid;
+  background: #cfe6fb repeating-conic-gradient(#bcdcf8 0 25%, transparent 0 50%) 0 0 / 16px 16px;
+  font-size: 20px;
+}
+.photos figcaption {
+  margin-top: 14px;
+  text-align: center;
+  font-family: var(--pixel);
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.photos + .muted { margin-top: 22px; }
+
+/* Learn more: the tile zooms open into a window before the project page loads */
+.zoom-ghost {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  background: linear-gradient(#1e6ef0 0 32px, #f4f8ff 32px);
+  box-shadow: 0 0 0 4px #0a2d8c;
+  transform-origin: 0 0;
+}
+
+@media (max-width: 640px) {
+  body.project-page { padding-top: 10px; padding-bottom: 24px; }
+  .project-body { padding: 18px 18px 26px; }
+  .lede { font-size: 19px; }
+  .photos { gap: 30px; }
+  .project-body h2 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .project-win { animation: win-open 0.24s steps(4, end); }
+  @keyframes win-open { from { transform: scale(0.94); opacity: 0.2; } }
+}

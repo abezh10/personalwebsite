@@ -1,0 +1,14 @@
+# Keep resume source files off the public site
+/resume.txt
+/Resume.pdf
+
+# Raw phone photos and videos: huge and they carry GPS location data.
+# The site loads the small, metadata-free copies in /media (built by scripts/optimize-media.sh)
+/images/
+/scripts/
+
+# Source sprite art (packed copies live in /sprites)
+/rabbit.png
+/raccoon.png
+/apple.png
+/banana.png

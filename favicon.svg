@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- pixel sky -->
+  <rect x="1" y="0" width="14" height="16" fill="#1b5cc8"/>
+  <rect x="0" y="1" width="16" height="14" fill="#1b5cc8"/>
+  <rect x="1" y="5" width="14" height="4" fill="#4b99f3"/>
+  <rect x="0" y="5" width="1" height="4" fill="#4b99f3"/>
+  <rect x="15" y="5" width="1" height="4" fill="#4b99f3"/>
+  <!-- sun -->
+  <rect x="12" y="2" width="2" height="2" fill="#ffe066"/>
+  <!-- cloud -->
+  <rect x="2" y="3" width="4" height="1" fill="#fff"/>
+  <rect x="1" y="4" width="6" height="1" fill="#fff"/>
+  <!-- grass hill -->
+  <rect x="0" y="11" width="16" height="4" fill="#4eae2e"/>
+  <rect x="1" y="15" width="14" height="1" fill="#348f20"/>
+  <rect x="3" y="10" width="9" height="1" fill="#4eae2e"/>
+  <rect x="5" y="9" width="5" height="1" fill="#8ee05a"/>
+  <rect x="0" y="11" width="3" height="1" fill="#8ee05a"/>
+  <rect x="12" y="10" width="4" height="1" fill="#8ee05a"/>
+  <!-- AZ -->
+  <path fill="#0b2a6f" d="M3 7h1v5H3zM4 6h2v1H4zM6 7h1v5H6zM4 9h2v1H4zM9 6h4v1H9zM11 7h1v1h-1zM10 8h1v2h-1zM9 10h1v1H9zM9 11h4v1H9z" transform="translate(1 1)"/>
+  <path fill="#fff" d="M3 7h1v5H3zM4 6h2v1H4zM6 7h1v5H6zM4 9h2v1H4zM9 6h4v1H9zM11 7h1v1h-1zM10 8h1v2h-1zM9 10h1v1H9zM9 11h4v1H9z" transform="translate(0 0)"/>
+</svg>
